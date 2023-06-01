@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Measurements details {{ group_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+</head>
+<body>
+<a href="/">back to main page</a>
+<div class="row">
+    <div class="column">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="text-align: center; margin: 0">{{ group_name }} - Details</h1>
+        <a href="/group/{{ group_name }}?download=csv">Download CSV</a>
+            </div>
+        <table class="center">
+            <tr>
+                <th>Index</th>
+                <th>Voltage</th>
+                <th>Temperature</th>
+                <th>Humidity</th>
+            </tr>
+            {% for measurement in measurements %}
+            <tr>
+                <td style="padding: 1px 10px;">{{ loop.index }}</td>
+                <td style="padding: 1px 10px;">{{ measurement.voltage }}</td>
+                <td style="padding: 1px 10px;">{{ measurement.temperature }}</td>
+                <td style="padding: 1px 10px;">{{ measurement.humidity }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <a href="/home">back to main page</a>
+    </div>
+    <div class="column">
+        <img src="{{ url_for('static', filename='images/' + group_name + '-' + group_id + '.jpg') }}" alt="Group Plot">
+    </div>
+</div>
+</body>
+</html>

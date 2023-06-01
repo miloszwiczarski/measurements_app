@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Measurements app</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+</head>
+
+<body>
+<h1>Generator:</h1>
+<form action="/home" method="post">
+    <h3>Measurement group name:</h3>
+    <label for="group_name"></label>
+    <input type="text" id="group_name" name="group_name">
+    <br>
+    <h3>Voltage</h3>
+    <label for="voltage_min">Min:</label>
+    <input type="text" id="voltage_min" name="voltage_min" value="0">
+    <label for="voltage_max">Max:</label>
+    <input type="text" id="voltage_max" name="voltage_max" value="5">
+    <br>
+    <h3>Temperature</h3>
+    <label for="temperature_min">Min:</label>
+    <input type="text" id="temperature_min" name="temperature_min" value="20">
+    <label for="temperature_max">Max:</label>
+    <input type="text" id="temperature_max" name="temperature_max" value="30">
+    <br>
+    <h3>Humidity</h3>
+    <label for="humidity_min">Min:</label>
+    <input type="text" id="humidity_min" name="humidity_min" value="40">
+    <label for="humidity_max">Max:</label>
+    <input type="text" id="humidity_max" name="humidity_max" value="60">
+    <br>
+    <h3>Number of measurements:</h3>
+    <label for="num_measurements"></label>
+    <input type="text" id="num_measurements" name="num_measurements" value="50">
+    <br>
+    <input class="gen_button" type="submit" value="Generate">
+</form>
+<br><br>
+<h1>Upload own csv</h1>
+<form method="POST" action="/upload_csv" enctype="multipart/form-data">
+    <h3 style="margin-bottom: 5px">Measurement group name:</h3>
+    <label for="csv_group_name"></label>
+    <input style="margin-bottom: 15px" type="text" id="csv_group_name" name="csv_group_name">
+    <br>
+    <input type="file" name="csv_file" accept=".csv">
+    <input type="submit" value="Wczytaj">
+</form>
+<br><br>
+<h1>Measurements:</h1>
+<ul>
+    {% for group in groups %}
+    <li>
+        <a href="/group/{{ group[0] }}">{{ group[0] }}</a>
+        <form action="/delete_group/{{ group[0] }}" method="post" style="display: inline;">
+            <input class="del_button" type="submit" value="X">
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>
