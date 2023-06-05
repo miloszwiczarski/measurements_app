@@ -8,12 +8,16 @@ import csv
 from flask import make_response
 from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+TEMP_UPLOAD_FOLDER = 'temp'
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///measurements.db'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['TEMP_UPLOAD_FOLDER'] = TEMP_UPLOAD_FOLDER
 db = SQLAlchemy(app)
+
+# Creating dirs if don't exist
+os.makedirs(os.path.join(app.root_path, 'static', 'images'), exist_ok=True)
+os.makedirs(os.path.join(app.root_path, 'temp'), exist_ok=True)
 
 
 class Measurement(db.Model):
@@ -58,12 +62,8 @@ def index():
             group_name = "Measurement"
             suffix = 0
             unique_group_name = group_name
-            while Measurement.query.filter_by(group_name=unique_group_name).first():
-                suffix += 1
-                unique_group_name = f"{group_name} ({suffix})"
-            group_name = unique_group_name
 
-        elif Measurement.query.filter_by(group_name=group_name).first():
+        if Measurement.query.filter_by(group_name=group_name).first():
             suffix = 0
             unique_group_name = group_name
             while Measurement.query.filter_by(group_name=unique_group_name).first():
@@ -97,14 +97,13 @@ def index():
 def group_details(group_name):
     group = Measurement.query.filter_by(group_name=group_name).first()
     measurements = Measurement.query.filter_by(group_name=group_name).all()
-    print(group_name)
+
     x = np.arange(len(measurements))
     voltage_data = [measurement.voltage for measurement in measurements]
     temperature_data = [measurement.temperature for measurement in measurements]
     humidity_data = [measurement.humidity for measurement in measurements]
 
     if not os.path.isfile(f'static/images/{group_name}-{group.group_id}.jpg'):
-        print("nie ma")
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(6, 10))
         ax1.plot(x, voltage_data, 'r-', label='Voltage')
         ax1.set_xlabel('Measurement Index')
@@ -122,13 +121,7 @@ def group_details(group_name):
         ax3.set_xlim(0, len(measurements))
 
         plt.tight_layout()
-        try:
-            plt.savefig(f'static/images/{group_name}-{group.group_id}.jpg')
-        except Exception as e:
-            print("d")
-
-            print(str(e))
-            print("d")
+        plt.savefig(f'static/images/{group_name}-{group.group_id}.jpg')
         plt.close()
 
     if 'download' in request.args:
@@ -173,10 +166,6 @@ def upload_csv():
                 group_name = "Uploaded_csv"
                 suffix = 0
                 unique_group_name = group_name
-                while Measurement.query.filter_by(group_name=unique_group_name).first():
-                    suffix += 1
-                    unique_group_name = f"{group_name} ({suffix})"
-                group_name = unique_group_name
 
             if Measurement.query.filter_by(group_name=group_name).first():
                 suffix = 0
@@ -190,8 +179,8 @@ def upload_csv():
         group_id = 1 if last_group is None else last_group.group_id + 1
 
         filename = secure_filename(csv_file.filename)
-        csv_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        csv_file.save(os.path.join(app.config['TEMP_UPLOAD_FOLDER'], filename))
+        file_path = os.path.join(app.config['TEMP_UPLOAD_FOLDER'], filename)
 
         with open(file_path, 'r') as file:
             reader = csv.reader(file)
